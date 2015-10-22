@@ -1,0 +1,570 @@
+/*
+ * Copyright © 2015 Pengutronix, Markus Pargmann <mpa@pengutronix.de>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "am335x-boneblack.dts"
+
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/ {
+	model = "TI AM335x BeagleBone Black OpenTAC";
+	compatible = "am335x-opentac", "ti,am335x-bone-black", "ti,am335x-bone", "ti,am33xx";
+
+	fan-5vpsu {
+		compatible = "pwm-fan";
+		pwms = <&ehrpwm1 0 10000 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_fan_5vpsu>;
+		cooling-min-state = <0>;
+		cooling-max-state = <3>;
+		#cooling-cells = <2>;
+		cooling-levels = <0 130 170 230>;
+	};
+
+	fan-12vpsu {
+		compatible = "pwm-fan";
+		pwms = <&ehrpwm1 1 10000 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_fan_12vpsu>;
+		cooling-min-state = <0>;
+		cooling-max-state = <3>;
+		#cooling-cells = <2>;
+		cooling-levels = <0 130 170 230>;
+	};
+
+	fan-switch1 {
+		compatible = "pwm-fan";
+		pwms = <&ehrpwm2 0 10000 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_fan_switch1>;
+		cooling-min-state = <0>;
+		cooling-max-state = <3>;
+		#cooling-cells = <2>;
+		cooling-levels = <0 130 170 230>;
+	};
+
+	fan-switch2 {
+		compatible = "pwm-fan";
+		pwms = <&ehrpwm2 1 10000 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_fan_switch2>;
+		cooling-min-state = <0>;
+		cooling-max-state = <3>;
+		#cooling-cells = <2>;
+		cooling-levels = <0 130 170 230>;
+	};
+
+	/* TODO: pwms are not working yet */
+
+	opentac_leds {
+		compatible = "gpio-leds";
+		pinctrl-name = "default";
+		pinctrl-0 = <&pinctrl_user_leds_opentac>;
+
+		green {
+			label = "opentac:green";
+			gpios = <&gpio0 26 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		red {
+			label = "opentac:red";
+			gpios = <&gpio0 7 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+	};
+
+	pwr_channel1 {
+		compatible = "regulator-fixed";
+		regulator-name = "pwr-channel1";
+		gpio = <&gpio_channel1 0 GPIO_ACTIVE_LOW>;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		startup-delay-us = <3000>;
+		regulator-always-on;
+	};
+
+	pwr_channel2 {
+		compatible = "regulator-fixed";
+		regulator-name = "pwr-channel2";
+		gpio = <&gpio_channel2 0 GPIO_ACTIVE_LOW>;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		startup-delay-us = <3000>;
+		regulator-always-on;
+	};
+
+	pwr_channel3 {
+		compatible = "regulator-fixed";
+		regulator-name = "pwr-channel3";
+		gpio = <&gpio_channel3 0 GPIO_ACTIVE_LOW>;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		startup-delay-us = <3000>;
+		regulator-always-on;
+	};
+
+	pwr_channel4 {
+		compatible = "regulator-fixed";
+		regulator-name = "pwr-channel4";
+		gpio = <&gpio_channel4 0 GPIO_ACTIVE_LOW>;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		startup-delay-us = <3000>;
+		regulator-always-on;
+	};
+
+	pwr_dispatcher {
+		compatible = "regulator-fixed";
+		regulator-name = "pwr-dispatcher";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pwrdispatcher>;
+		gpio = <&gpio3 23 GPIO_ACTIVE_HIGH>;
+		regulator-always-on;
+	};
+
+	pwr_ethernet {
+		compatible = "regulator-fixed";
+		regulator-name = "pwr-ethernet";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pwrethernet>;
+		gpio = <&gpio3 19 GPIO_ACTIVE_HIGH>;
+		regulator-always-on;
+	};
+
+	/* TODO: the relays should be regulators as well */
+	/*
+	 * TODO: make the regulator userspace consumer driver usable for DT
+	 * somehow. As soon as fixed 'regulator-always-on' can be removed.
+	 */
+	/* TODO: Daughter board missing */
+};
+
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c1>;
+	status = "okay";
+
+	gpio_channel1: channel1_expander@18 {
+		compatible = "nxp,pca9557";
+		reg = <0x18>;
+		#gpio-cells = <2>;
+
+		nPwrEn {
+			gpios = <0 0>;
+		};
+
+		SerialnReset {
+			gpios = <1 0>;
+		};
+
+		SerialRelayRst {
+			gpios = <2 0>;
+		};
+
+		SerialRelaySet {
+			gpios = <3 0>;
+		};
+
+		PwrRelayRst {
+			gpios = <4 0>;
+		};
+
+		PwrRelaySet {
+			gpios = <5 0>;
+		};
+
+		AlarmShutdown {
+			gpios = <6 0>;
+		};
+
+		nAlarmRst {
+			gpios = <7 0>;
+		};
+	};
+
+	gpio_channel2: channel2_expander@19 {
+		compatible = "nxp,pca9557";
+		reg = <0x19>;
+		#gpio-cells = <2>;
+
+		nPwrEn {
+			gpios = <0 0>;
+		};
+
+		SerialnReset {
+			gpios = <1 0>;
+		};
+
+		SerialRelayRst {
+			gpios = <2 0>;
+		};
+
+		SerialRelaySet {
+			gpios = <3 0>;
+		};
+
+		PwrRelayRst {
+			gpios = <4 0>;
+		};
+
+		PwrRelaySet {
+			gpios = <5 0>;
+		};
+
+		AlarmShutdown {
+			gpios = <6 0>;
+		};
+
+		nAlarmRst {
+			gpios = <7 0>;
+		};
+	};
+
+	gpio_channel3: channel3_expander@1a {
+		compatible = "nxp,pca9557";
+		reg = <0x1a>;
+		#gpio-cells = <2>;
+
+		nPwrEn {
+			gpios = <0 0>;
+		};
+
+		SerialnReset {
+			gpios = <1 0>;
+		};
+
+		SerialRelayRst {
+			gpios = <2 0>;
+		};
+
+		SerialRelaySet {
+			gpios = <3 0>;
+		};
+
+		PwrRelayRst {
+			gpios = <4 0>;
+		};
+
+		PwrRelaySet {
+			gpios = <5 0>;
+		};
+
+		AlarmShutdown {
+			gpios = <6 0>;
+		};
+
+		nAlarmRst {
+			gpios = <7 0>;
+		};
+	};
+
+	gpio_channel4: channel4_expander@1b {
+		compatible = "nxp,pca9557";
+		reg = <0x1b>;
+		#gpio-cells = <2>;
+
+		nPwrEn {
+			gpios = <0 0>;
+		};
+
+		SerialnReset {
+			gpios = <1 0>;
+		};
+
+		SerialRelayRst {
+			gpios = <2 0>;
+		};
+
+		SerialRelaySet {
+			gpios = <3 0>;
+		};
+
+		PwrRelayRst {
+			gpios = <4 0>;
+		};
+
+		PwrRelaySet {
+			gpios = <5 0>;
+		};
+
+		AlarmShutdown {
+			gpios = <6 0>;
+		};
+
+		nAlarmRst {
+			gpios = <7 0>;
+		};
+	};
+
+	gpio_ext: expander@20 {
+		compatible = "nxp,pca9554";
+		reg = <0x20>;
+		interrupt-parent = <&gpio2>;
+		interrupts = <1 IRQ_TYPE_EDGE_FALLING>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_ext>;
+		#gpio-cells = <2>;
+	};
+
+	channel1_sensor@4c {
+		/* TODO: driver missing?! */
+		compatible = "smsc,emc1701";
+		reg = <0x4c>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <12 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_channel1_sensor>;
+	};
+
+	channel2_sensor@4d {
+		/* TODO: driver missing?! */
+		compatible = "smsc,emc1701";
+		reg = <0x4d>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <13 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_channel2_sensor>;
+	};
+
+	channel3_sensor@4e {
+		/* TODO: driver missing?! */
+		compatible = "smsc,emc1701";
+		reg = <0x4e>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <14 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_channel3_sensor>;
+	};
+
+	channel4_sensor@4f {
+		/* TODO: driver missing?! */
+		compatible = "smsc,emc1701";
+		reg = <0x4f>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <15 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_channel4_sensor>;
+	};
+};
+
+&i2c2 {
+	gpio_expander@20 {
+		compatible = "nxp,pca9554";
+		reg = <0x20>;
+
+		enPulse1 {
+			gpios = <0 0>;
+		};
+
+		enPulse2 {
+			gpios = <1 0>;
+		};
+
+		enPulse3 {
+			gpios = <2 0>;
+		};
+
+		enPulse4 {
+			gpios = <3 0>;
+		};
+	};
+
+	gpio_expander@21 {
+		compatible = "nxp,pca9554";
+		reg = <0x21>;
+
+		q1 {
+			gpios = <0 0>;
+		};
+
+		q2 {
+			gpios = <1 0>;
+		};
+
+		q3 {
+			gpios = <2 0>;
+		};
+
+		q4 {
+			gpios = <3 0>;
+		};
+
+		q5 {
+			gpios = <4 0>;
+		};
+
+		q6 {
+			gpios = <5 0>;
+		};
+
+		q7 {
+			gpios = <6 0>;
+		};
+
+		q8 {
+			gpios = <7 0>;
+		};
+	};
+
+	gpio_expander@22 {
+		compatible = "nxp,pca9554";
+		reg = <0x22>;
+
+		q9 {
+			gpios = <0 0>;
+		};
+
+		q10 {
+			gpios = <1 0>;
+		};
+
+		q11 {
+			gpios = <2 0>;
+		};
+
+		q12 {
+			gpios = <3 0>;
+		};
+	};
+};
+
+&tscadc {
+	status = "okay";
+};
+
+&am335x_adc {
+	ti,adc-channels = <0 1 2 3 4 5 6>;
+};
+
+&ehrpwm1 {
+	status = "okay";
+};
+
+&ehrpwm2 {
+	status = "okay";
+};
+
+&epwmss1 {
+	status = "okay";
+};
+
+&epwmss2 {
+	status = "okay";
+};
+
+&gpio0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_nrst>;
+
+	nRST {
+		gpios = <27 0>;
+	};
+};
+
+&am33xx_pinmux {
+	pinctrl_user_leds_opentac: user_leds_opentac {
+		pinctrl-single,pins = <
+			0x28 (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* GPIO0_26 - StatusGreen */
+			0x164 (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* GPIO0_7 - StatusRed */
+		>;
+	};
+
+	pinctrl_pwrdispatcher: pwrdispatcher {
+		pinctrl-single,pins = <
+			0x1ac (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* GPIO3_21 - enDispatcher */
+		>;
+	};
+
+	pinctrl_pwrethernet: pwrethernet {
+		pinctrl-single,pins = <
+			0x1a4 (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* GPIO3_19 - enEthernet */
+		>;
+	};
+
+	pinctrl_opentac_gpio: opentac_gpio {
+		pinctrl-single,pins = <
+			0x18c (PIN_INPUT_PULLUP | MUX_MODE7) /* GPIO2_1 - nINT */
+		>;
+	};
+
+	pinctrl_i2c1: i2c1 {
+		pinctrl-single,pins = <
+			0x158 (PIN_INPUT_PULLUP | MUX_MODE2) /* SPI0_D1 - I2C1_SDA */
+			0x15c (PIN_INPUT_PULLUP | MUX_MODE2) /* SPI0_CS0 - I2C1_SCL */
+		>;
+	};
+
+	pinctrl_fan_5vpsu: fan_5vpsu {
+		pinctrl-single,pins = <
+			0x045 (PIN_OUTPUT | MUX_MODE6) /* GPMC_A2 - EHRPWM1A */
+		>;
+	};
+
+	pinctrl_fan_12vpsu: fan_12vpsu {
+		pinctrl-single,pins = <
+			0x04c (PIN_OUTPUT | MUX_MODE6) /* GPMC_A3 - EHRPWM1B */
+		>;
+	};
+
+	pinctrl_fan_switch1: fan_switch1 {
+		pinctrl-single,pins = <
+			0x020 (PIN_OUTPUT | MUX_MODE6) /* GPMC_AD8 - EHRPWM2A */
+		>;
+	};
+
+	pinctrl_fan_switch2: fan_switch2 {
+		pinctrl-single,pins = <
+			0x024 (PIN_OUTPUT | MUX_MODE6) /* GPMC_AD9 - EHRPWM2B */
+		>;
+	};
+
+	pinctrl_gpio_ext: gpio_ext {
+		pinctrl-single,pins = <
+			0x08c (PIN_INPUT_PULLUP | MUX_MODE7) /* GPMC_CLK - GPIO2_1 */
+		>;
+	};
+
+	pinctrl_channel1_sensor: channel1_sensor {
+		pinctrl-single,pins = <
+			0x030 (PIN_INPUT_PULLUP | MUX_MODE7) /* GPMC_AD12 - GPIO1_12 */
+		>;
+	};
+
+	pinctrl_channel2_sensor: channel2_sensor {
+		pinctrl-single,pins = <
+			0x034 (PIN_INPUT_PULLUP | MUX_MODE7) /* GPMC_AD13 - GPIO1_13 */
+		>;
+	};
+
+	pinctrl_channel3_sensor: channel3_sensor {
+		pinctrl-single,pins = <
+			0x038 (PIN_INPUT_PULLUP | MUX_MODE7) /* GPMC_AD14 - GPIO1_14 */
+		>;
+	};
+
+	pinctrl_channel4_sensor: channel4_sensor {
+		pinctrl-single,pins = <
+			0x03c (PIN_INPUT_PULLUP | MUX_MODE7) /* GPMC_AD15 - GPIO1_15 */
+		>;
+	};
+
+	pinctrl_nrst: nrst {
+		pinctrl-single,pins = <
+			0x02c (PIN_OUTPUT_PULLUP | MUX_MODE7) /* GPMC_AD11 - GPIO0_27 */
+		>;
+	};
+};

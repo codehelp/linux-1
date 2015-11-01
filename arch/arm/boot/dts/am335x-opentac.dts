@@ -32,6 +32,7 @@
 		cooling-max-state = <3>;
 		#cooling-cells = <2>;
 		cooling-levels = <0 130 170 230>;
+		status = "okay";
 	};
 
 	fan-12vpsu {
@@ -43,6 +44,7 @@
 		cooling-max-state = <3>;
 		#cooling-cells = <2>;
 		cooling-levels = <0 130 170 230>;
+		status = "okay";
 	};
 
 	fan-switch1 {
@@ -54,6 +56,7 @@
 		cooling-max-state = <3>;
 		#cooling-cells = <2>;
 		cooling-levels = <0 130 170 230>;
+		status = "okay";
 	};
 
 	fan-switch2 {
@@ -65,6 +68,7 @@
 		cooling-max-state = <3>;
 		#cooling-cells = <2>;
 		cooling-levels = <0 130 170 230>;
+		status = "okay";
 	};
 
 	/* TODO: pwms are not working yet */
@@ -468,11 +472,19 @@
 	ti,adc-channels = <0 1 2 3 4 5 6>;
 };
 
+&ehrpwm0 {
+	status = "okay";
+};
+
 &ehrpwm1 {
 	status = "okay";
 };
 
 &ehrpwm2 {
+	status = "okay";
+};
+
+&epwmss0 {
 	status = "okay";
 };
 
@@ -531,13 +543,13 @@
 
 	pinctrl_fan_switch1: fan_switch1 {
 		pinctrl-single,pins = <
-			0x020 (PIN_OUTPUT | MUX_MODE6) /* GPMC_AD8 - EHRPWM2A */
+			0x020 (PIN_OUTPUT | MUX_MODE4) /* GPMC_AD8 - EHRPWM2A */
 		>;
 	};
 
 	pinctrl_fan_switch2: fan_switch2 {
 		pinctrl-single,pins = <
-			0x024 (PIN_OUTPUT | MUX_MODE6) /* GPMC_AD9 - EHRPWM2B */
+			0x024 (PIN_OUTPUT | MUX_MODE4) /* GPMC_AD9 - EHRPWM2B */
 		>;
 	};
 

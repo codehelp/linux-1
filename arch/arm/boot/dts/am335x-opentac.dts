@@ -94,7 +94,6 @@
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
 		startup-delay-us = <3000>;
-		regulator-always-on;
 	};
 
 	pwr_channel2 {
@@ -104,7 +103,6 @@
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
 		startup-delay-us = <3000>;
-		regulator-always-on;
 	};
 
 	pwr_channel3 {
@@ -114,7 +112,6 @@
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
 		startup-delay-us = <3000>;
-		regulator-always-on;
 	};
 
 	pwr_channel4 {
@@ -124,25 +121,46 @@
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
 		startup-delay-us = <3000>;
-		regulator-always-on;
 	};
 
-	pwr_dispatcher {
+	pwr_dispatcher: pwr_dispatcher {
 		compatible = "regulator-fixed";
+		enable-active-high;  // sets the logic mode
 		regulator-name = "pwr-dispatcher";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_pwrdispatcher>;
+		/*
+			active high gets overridden by regulator driver but still
+			need to define the GPIO as ACTIVE_HIGH
+		*/
 		gpio = <&gpio3 21 GPIO_ACTIVE_HIGH>;
-		regulator-always-on;
 	};
 
-	pwr_ethernet {
+	en_dispatcher-consumer {
+		compatible = "reg-userspace-consumer";
+		regulator-name = "en_dispatcher-consumer";
+		regulator-supplies = "vdispatcher-5v";
+		vdispatcher-5v-supply = <&pwr_dispatcher>;
+	};
+
+	pwr_ethernet: pwr_ethernet {
 		compatible = "regulator-fixed";
+		enable-active-high;
 		regulator-name = "pwr-ethernet";
+		regulator-min-microvolt = <12000000>;
+		regulator-max-microvolt = <12000000>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_pwrethernet>;
 		gpio = <&gpio3 19 GPIO_ACTIVE_HIGH>;
-		regulator-always-on;
+	};
+
+	en_ethernet-consumer {
+		compatible = "reg-userspace-consumer";
+		regulator-name = "en_ethernet-consumer";
+		regulator-supplies = "vethernet-12v";
+		vethernet-12v-supply = <&pwr_ethernet>;
 	};
 
 	/* TODO: the relays should be regulators as well */
